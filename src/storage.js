@@ -1,20 +1,45 @@
+
 import fs from 'node:fs';
+import path from 'path';
 
-const TRAINEE_DATA_FILE_PATH = './data/trainees.json';
-const COURSE_DATA_FILE_PATH = './data/courses.json';
+const TRAINEE_DATA_FILE_PATH = path.resolve('./data/trainees.json');
+const COURSE_DATA_FILE_PATH = path.resolve('./data/courses.json');
 
-export function loadTraineeData() {
-  // Use the fs module to read the trainees.json file and return the data as a JavaScript object  
+// Helper: Read JSON file safely
+function readJsonFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify([])); 
+    }
+    const data = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error(`Error reading ${filePath}:`, error);
+    return [];
+  }
 }
 
-export function saveTraineeData() {
-  // Use the fs module to write the updated trainee data back to the trainees.json file 
+// Helper: Write JSON file
+function writeJsonFile(filePath, data) {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error(`Error writing ${filePath}:`, error);
+  }
+}
+
+export function loadTraineeData() {
+  return readJsonFile(TRAINEE_DATA_FILE_PATH);
+}
+
+export function saveTraineeData(data) {
+  writeJsonFile(TRAINEE_DATA_FILE_PATH, data);
 }
 
 export function loadCourseData() {
-  // TODO: Implement
+  return readJsonFile(COURSE_DATA_FILE_PATH);
 }
 
-export function saveCourseData() {
-  // TODO: Implement
+export function saveCourseData(data) {
+  writeJsonFile(COURSE_DATA_FILE_PATH, data);
 }
