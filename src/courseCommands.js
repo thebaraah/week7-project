@@ -1,3 +1,4 @@
+
 import { saveCourseData, loadCourseData } from './storage.js';
 
 function addCourse() {
