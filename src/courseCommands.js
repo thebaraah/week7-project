@@ -57,12 +57,102 @@ function addCourse(args) {
   console.log('CREATED: ${id} ${name} ${startDate}');
 }
 
-function updateCourse() {
+function updateCourse(args) {
   // TODO: Implement logic
+  if (args.length !== 3) {
+    console.log('ERROR: Must provide ID, new name, and new start date');
+    console.log('Example:');
+    console.log('   course update 5 "Advanced JavaScript" 2026-03-15');
+    return;
+  }
+
+  // Get the values
+  const id = Number(args[0]); // convert to number
+  const newName = args[1];
+  const newStartDate = args[2];
+
+  // Check date format (yyyy-MM-dd)
+  if (
+    newStartDate.length !== 10 ||
+    newStartDate[4] !== '-' ||
+    newStartDate[7] !== '-'
+  ) {
+    console.log('ERROR: Invalid start date. Must be in yyyy-MM-dd format');
+    return;
+  }
+
+  // Load courses
+  const courses = loadCourseData();
+
+  // Find the course
+  let course = null;
+  for (let i = 0; i < courses.length; i++) {
+    if (courses[i].id === id) {
+      course = courses[i];
+      break;
+    }
+  }
+
+  if (!course) {
+    console.log(`Course with ID ${id} not found`);
+    return;
+  }
+
+  // Updates
+  course.name = newName;
+  course.startDate = newStartDate;
+
+  // Save
+  saveCourseData(courses);
+
+  console.log(`UPDATED: ${id} ${newName} ${newStartDate}`);
 }
 
-function deleteCourse() {
+function deleteCourse(args) {
   // TODO: Implement logic
+  if (args.length !== 1) {
+    console.log('ERROR: You must provide exactly one ID');
+    console.log('Example:');
+    console.log('   course delete 7');
+    return;
+  }
+
+  // turn it to a number
+  const id = Number(args[0]);
+
+  // wrong input
+  if (isNaN(id)) {
+    console.log('ERROR: ID must be a number');
+    return;
+  }
+
+  // load courses
+  const courses = loadCourseData();
+
+  //look for course
+  let foundIndex = -1;
+  let courseName = '';
+
+  for (let i = 0; i < courses.length; i++) {
+    if (courses[i].id === id) {
+      foundIndex = i; // remember where it is
+      courseName = courses[i].name; // remember the name
+      break;
+    }
+  }
+
+  if (foundIndex === -1) {
+    console.log(`ERROR: Course with ID ${id} does not exist`);
+    return;
+  }
+
+  //delete
+  courses.splice(foundIndex, 1);
+
+  // save
+  saveCourseData(courses);
+
+  console.log(`DELETED: ${id} ${courseName}`);
 }
 
 function joinCourse() {
