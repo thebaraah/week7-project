@@ -7,5 +7,43 @@
       12345,
       12346
     ]
+  },
+  {
+    "id": 6520,
+    "name": "python",
+    "startDate": "2026-03-02",
+    "participants": [
+      12345
+    ]
+  },
+  {
+    "id": 97543,
+    "name": "Biomedical",
+    "startDate": "2026-03-03",
+    "participants": [
+      12345
+    ]
+  },
+  {
+    "id": 3088,
+    "name": "chemistry",
+    "startDate": "2026-04-11",
+    "participants": [
+      12345
+    ]
+  },
+  {
+    "id": 86134,
+    "name": "ENGLISH",
+    "startDate": "2026-02-16",
+    "participants": [
+      12345
+    ]
+  },
+  {
+    "id": 6913,
+    "name": "PHYSICS",
+    "startDate": "2026-11-12",
+    "participants": []
   }
 ]

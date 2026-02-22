@@ -105,6 +105,29 @@ function fetchAllTrainees() {
   console.log(`\nTotal: ${trainees.length}`);
 }
 
+function searchTrainee(args) {
+  if (!args || args.length < 1) {
+    console.log("ERROR: Must provide a query");
+    return;
+  }
+
+  const query = args.join(" ").toLowerCase();
+  const trainees = loadTraineeData();
+
+  const results = trainees.filter(t =>
+    t.firstName.toLowerCase().includes(query) ||
+    t.lastName.toLowerCase().includes(query)
+  );
+
+  console.log("Results:");
+
+  results.forEach(t => {
+    console.log(`${t.id} ${t.firstName} ${t.lastName}`);
+  });
+
+  console.log(`\nTotal: ${results.length}`);
+}
+
 
 export function handleTraineeCommand(subcommand, args) {
   // Read the subcommand and call the appropriate function with the arguments
@@ -128,6 +151,9 @@ export function handleTraineeCommand(subcommand, args) {
     case "FETCHALL":
       fetchAllTrainees();
       break;
+      case "SEARCH":
+  searchTrainee(args);
+  break;
 
     default:
       console.log("ERROR: Invalid command");

@@ -1,177 +1,258 @@
 
-import { saveCourseData, loadCourseData } from './storage.js';
+import { saveCourseData, loadCourseData, loadTraineeData } from './storage.js';
 
 function addCourse(args) {
-  // TODO: Implement logic
-  if (args.length !== 2) {
-    console.log('ERROR: Must provide course name and start date');
+  if (!args || args.length < 2) {
+    console.log("ERROR: Must provide course name and start date");
     return;
   }
-  //check format
+
   const name = args[0];
   const startDate = args[1];
 
-  if (!isGoodDate) {
-    console.log('ERROR: Invalid start date. Must be in the yyyy-mm-dd format');
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(startDate)) {
+    console.log("ERROR: Invalid start date. Must be in yyyy-MM-dd format");
     return;
   }
 
   const courses = loadCourseData();
-  //create unique id and try 20 times
-  let id;
-  let isUnique = false;
 
-  for (let tryCount = 0; tryCount < 20; tryCount++) {
-    id = Math.floor(Math.random() * 1000);
-    //look if id is used
-    isUnique = true;
-    for (let i = 0; i < courses.length; i++) {
-      if (courses[i].id === id) {
-        isUnique = false;
-        break;
-      }
-    }
-    //stop looking if id is unique
-    if (isUnique) {
-      break;
-    }
-  }
-  if (!isUnique) {
-    id = 0;
-    for (let i = 0; i < courses.length; i++) {
-      if (courses[i].id > id) {
-        id = courses[i].id;
-      }
-    }
-    id = id + 1;
-    if (id > 9999) id = 9999;
-  }
-  //adding a new course
   const newCourse = {
-    id: id,
-    name: name,
-    startDate: startDate,
+    id: Math.floor(Math.random() * 100000),
+    name,
+    startDate,
+    participants: []
   };
+
   courses.push(newCourse);
   saveCourseData(courses);
 
-  console.log('CREATED: ${id} ${name} ${startDate}');
+  console.log(`CREATED: ${newCourse.id} ${name} ${startDate}`);
 }
 
 function updateCourse(args) {
-  // TODO: Implement logic
-  if (args.length !== 3) {
-    console.log('ERROR: Must provide ID, new name, and new start date');
-    console.log('Example:');
-    console.log('   course update 5 "Advanced JavaScript" 2026-03-15');
+  if (!args || args.length < 3) {
+    console.log("ERROR: Must provide ID, name and start date.");
     return;
   }
 
-  // Get the values
-  const id = Number(args[0]); // convert to number
-  const newName = args[1];
-  const newStartDate = args[2];
+  const id = Number(args[0]);
+  const name = args[1];
+  const startDate = args[2];
 
-  // Check date format (yyyy-MM-dd)
-  if (
-    newStartDate.length !== 10 ||
-    newStartDate[4] !== '-' ||
-    newStartDate[7] !== '-'
-  ) {
-    console.log('ERROR: Invalid start date. Must be in yyyy-MM-dd format');
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(startDate)) {
+    console.log("ERROR: Invalid start date. Must be in yyyy-MM-dd format");
     return;
   }
 
-  // Load courses
   const courses = loadCourseData();
-
-  // Find the course
-  let course = null;
-  for (let i = 0; i < courses.length; i++) {
-    if (courses[i].id === id) {
-      course = courses[i];
-      break;
-    }
-  }
+  const course = courses.find(c => c.id === id);
 
   if (!course) {
-    console.log(`Course with ID ${id} not found`);
-    return;
-  }
-
-  // Updates
-  course.name = newName;
-  course.startDate = newStartDate;
-
-  // Save
-  saveCourseData(courses);
-
-  console.log(`UPDATED: ${id} ${newName} ${newStartDate}`);
-}
-
-function deleteCourse(args) {
-  // TODO: Implement logic
-  if (args.length !== 1) {
-    console.log('ERROR: You must provide exactly one ID');
-    console.log('Example:');
-    console.log('   course delete 7');
-    return;
-  }
-
-  // turn it to a number
-  const id = Number(args[0]);
-
-  // wrong input
-  if (isNaN(id)) {
-    console.log('ERROR: ID must be a number');
-    return;
-  }
-
-  // load courses
-  const courses = loadCourseData();
-
-  //look for course
-  let foundIndex = -1;
-  let courseName = '';
-
-  for (let i = 0; i < courses.length; i++) {
-    if (courses[i].id === id) {
-      foundIndex = i; // remember where it is
-      courseName = courses[i].name; // remember the name
-      break;
-    }
-  }
-
-  if (foundIndex === -1) {
     console.log(`ERROR: Course with ID ${id} does not exist`);
     return;
   }
 
-  //delete
-  courses.splice(foundIndex, 1);
+  course.name = name;
+  course.startDate = startDate;
 
-  // save
   saveCourseData(courses);
 
-  console.log(`DELETED: ${id} ${courseName}`);
+  console.log(`UPDATED: ${id} ${name} ${startDate}`);
 }
 
-function joinCourse() {
-  // TODO: Implement logic
+function deleteCourse(args) {
+  if (!args || args.length < 1) {
+    console.log("ERROR: Must provide ID");
+    return;
+  }
+
+  const id = Number(args[0]);
+  const courses = loadCourseData();
+
+  const index = courses.findIndex(c => c.id === id);
+
+  if (index === -1) {
+    console.log(`ERROR: Course with ID ${id} does not exist`);
+    return;
+  }
+
+  const deletedCourse = courses[index];
+
+  courses.splice(index, 1);
+
+  saveCourseData(courses);
+
+  console.log(`DELETED: ${deletedCourse.id} ${deletedCourse.name}`);
 }
 
-function leaveCourse() {
-  // TODO: Implement logic
+function joinCourse(args) {
+  if (!args || args.length < 2) {
+    console.log("ERROR: Must provide course ID and trainee ID");
+    return;
+  }
+
+  const courseID = Number(args[0]);
+  const traineeID = Number(args[1]);
+
+  const courses = loadCourseData();
+  const trainees = loadTraineeData();
+
+  const course = courses.find(c => c.id === courseID);
+  if (!course) {
+    console.log(`ERROR: Course with ID ${courseID} does not exist`);
+    return;
+  }
+
+  const trainee = trainees.find(t => t.id === traineeID);
+  if (!trainee) {
+    console.log(`ERROR: Trainee with ID ${traineeID} does not exist`);
+    return;
+  }
+
+  //already joined
+  if (course.participants.includes(traineeID)) {
+    console.log("ERROR: The Trainee has already joined this course");
+    return;
+  }
+
+  // Course full
+  if (course.participants.length >= 20) {
+    console.log("ERROR: The course is full.");
+    return;
+  }
+
+  // Count how many courses trainee already joined
+  const joinedCourses = courses.filter(c =>
+    c.participants.includes(traineeID)
+  );
+
+  if (joinedCourses.length >= 5) {
+    console.log("ERROR: A trainee is not allowed to join more than 5 courses.");
+    return;
+  }
+
+  //Add trainee
+  course.participants.push(traineeID);
+  saveCourseData(courses);
+
+  console.log(`${trainee.firstName} ${trainee.lastName} Joined ${course.name}`);
 }
 
-function getCourse() {
-  // TODO: Implement logic
+function leaveCourse(args) {
+  if (!args || args.length < 2) {
+    console.log("ERROR: Must provide course ID and trainee ID");
+    return;
+  }
+
+  const courseID = Number(args[0]);
+  const traineeID = Number(args[1]);
+
+  const courses = loadCourseData();
+  const trainees = loadTraineeData();
+
+  const course = courses.find(c => c.id === courseID);
+  if (!course) {
+    console.log(`ERROR: Course with ID ${courseID} does not exist`);
+    return;
+  }
+
+  const trainee = trainees.find(t => t.id === traineeID);
+  if (!trainee) {
+    console.log(`ERROR: Trainee with ID ${traineeID} does not exist`);
+    return;
+  }
+
+  if (!course.participants.includes(traineeID)) {
+    console.log("ERROR: The Trainee did not join the course");
+    return;
+  }
+
+  course.participants = course.participants.filter(
+    id => id !== traineeID
+  );
+
+  saveCourseData(courses);
+
+  console.log(`${trainee.firstName} ${trainee.lastName} Left ${course.name}`);
+}
+
+function getCourse(args) {
+  if (!args || args.length < 1) {
+    console.log("ERROR: Must provide ID");
+    return;
+  }
+
+  const courseID = Number(args[0]);
+
+  const courses = loadCourseData();
+  const trainees = loadTraineeData();
+
+  const course = courses.find(c => c.id === courseID);
+
+  if (!course) {
+    console.log(`ERROR: Course with ID ${courseID} does not exist`);
+    return;
+  }
+
+  console.log(`${course.id} ${course.name} ${course.startDate}`);
+  console.log(`Participants (${course.participants.length}):`);
+
+  course.participants.forEach(id => {
+    const trainee = trainees.find(t => t.id === id);
+    if (trainee) {
+      console.log(`- ${trainee.id} ${trainee.firstName} ${trainee.lastName}`);
+    }
+  });
 }
 
 function getAllCourses() {
-  // TODO: Implement logic
+  const courses = loadCourseData();
+
+  console.log("Courses:");
+
+  const sorted = courses.sort((a, b) =>
+    a.startDate.localeCompare(b.startDate)
+  );
+
+  sorted.forEach(course => {
+    const count = course.participants.length;
+    const fullLabel = count === 20 ? "FULL" : "";
+    console.log(`${course.id} ${course.name} ${course.startDate} ${count} ${fullLabel}`);
+  });
+
+  console.log(`\nTotal: ${courses.length}`);
 }
 
 export function handleCourseCommand(subcommand, args) {
   // Read the subcommand and call the appropriate function with the arguments
+  switch (subcommand) {
+    case "ADD":
+      addCourse(args);
+      break;
+      case "UPDATE":
+  updateCourse(args);
+  break;
+  case "DELETE":
+  deleteCourse(args);
+  break;
+      case "JOIN":
+  joinCourse(args);
+  break;
+  case "LEAVE":
+  leaveCourse(args);
+  break;
+  case "GET":
+  getCourse(args);
+  break;
+      case "GETALL":
+  getAllCourses();
+  break;
+
+    default:
+      console.log("ERROR: Invalid command");
+  }
 }
+

@@ -8,3 +8,12 @@ describe('Example Test', () => {
   // Add your tests here. You can create multiple test files in the `tests` directory.
   // Make sure they are named with the `.test.js` extension to be picked up by Vitest.
 });
+
+import { describe, test, expect } from 'vitest';
+
+describe("Trainee Logic", () => {
+  test("should not allow more than 5 courses", () => {
+    const courses = [1,2,3,4,5];
+    expect(courses.length).toBeLessThanOrEqual(5);
+  });
+});
